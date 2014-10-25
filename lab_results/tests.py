@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-import otree.test
+from __future__ import division
+from . import views
+from ._builtin import Bot
+import random
 from otree.common import Money, money_range
-import lab_results.views as views
-from lab_results._builtin import Bot
-
-
+from .models import Constants
 class PlayerBot(Bot):
 
     def play(self):

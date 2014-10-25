@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-import matching_pennies.models as models
-from matching_pennies._builtin import Page, WaitPage
-from otree.common import Money
-
+from __future__ import division
+from . import models
+from ._builtin import Page, WaitPage
+from otree.common import Money, money_range
+from .models import Constants
 
 def variables_for_all_templates(self):
-    return {'point_value': self.treatment.point_value,
-            'total_q': 1,
+
+    return {'total_q': 1,
             'total_rounds': self.subsession.number_of_rounds,
             'round_number': self.subsession.round_number,
             'role': self.player.role()}
@@ -45,10 +46,9 @@ class FeedbackOne(Page):
         return {'num_q': 1,
                 'question': 'Suppose Player 1 picked "Heads" and Player 2 guessed "Tails". Which of the following will be the result of that round?',
                 'answer': self.player.training_question_1,
-                'correct': self.treatment.training_1_correct,
+                'correct': Constants.training_1_correct,
                 'explanation': 'Player 1 gets 100 points, Player 2 gets 0 points',
-                'is_correct': self.player.is_training_question_1_correct(),
-                }
+                'is_correct': self.player.is_training_question_1_correct()}
 
 
 class Choice(Page):
@@ -61,15 +61,13 @@ class Choice(Page):
 
 class ResultsWaitPage(WaitPage):
 
-    group = models.Match
+    scope = models.Group
 
     def after_all_players_arrive(self):
-        self.match.set_points()
-        if self.subsession.round_number == self.subsession.number_of_rounds:
-            self.match.set_payoffs()
+        self.group.set_points()
 
     def body_text(self):
-        return "We need to wait for your opponent."
+        return "Waiting for your opponent."
 
 
 class Results(Page):
@@ -77,14 +75,14 @@ class Results(Page):
     template_name = 'matching_pennies/Results.html'
 
     def variables_for_template(self):
+        self.player.set_payoff()
 
         return {'my_choice': self.player.penny_side,
                 'other_choice': self.player.other_player().penny_side,
                 'my_points': self.player.points_earned,
                 'other_points': self.player.other_player().points_earned,
                 'my_payoff': self.player.payoff,
-                'other_payoff': self.player.other_player().payoff,
-                'me_in_previous_rounds': self.player.me_in_previous_rounds()}
+                'other_payoff': self.player.other_player().payoff}
 
 
 class ResultsSummary(Page):
@@ -95,12 +93,16 @@ class ResultsSummary(Page):
         return self.subsession.round_number == self.subsession.number_of_rounds
 
     def variables_for_template(self):
+        me_in_all_rounds = self.player.me_in_all_rounds()
+        total_points_earned = sum([p.points_earned for p in me_in_all_rounds])
+        base_points = 50
 
-        return {'me_in_previous_rounds': self.player.me_in_previous_rounds(),
+        return {'me_in_all_rounds': me_in_all_rounds,
                 'points_earned': self.player.points_earned,
                 'is_winner': self.player.is_winner,
-                'total_points_earned': sum(p.points_earned for p in self.player.me_in_previous_rounds() + [self.player]),
-                'payoff': self.player.payoff}
+                'total_points_earned': total_points_earned,
+                'base_points': base_points,
+                'total_plus_base': total_points_earned + base_points}
 
 
 def pages():

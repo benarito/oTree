@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-import survey.models as models
-from survey._builtin import Page
-from otree.common import Money
-
+from __future__ import division
+from . import models
+from ._builtin import Page, WaitPage
+from otree.common import Money, money_range
+from .models import Constants
 
 class Demographics(Page):
 
@@ -30,6 +31,10 @@ class CognitiveReflectionTest(Page):
 class End(Page):
 
     template_name = 'survey/End.html'
+
+    def variables_for_template(self):
+        self.player.set_payoff()
+        return None
 
 
 def pages():

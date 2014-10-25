@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-import private_value_auction.models as models
-from private_value_auction._builtin import Page, WaitPage
-from otree.common import Money
-
+from __future__ import division
+from . import models
+from ._builtin import Page, WaitPage
+from otree.common import Money, money_range
+from .models import Constants
 
 class Introduction(Page):
 
@@ -21,16 +22,16 @@ class Bid(Page):
             self.player.private_value = self.player.generate_private_value()
 
         return {'private_value': self.player.private_value,
-                'min_bid': Money(self.treatment.min_allowable_bid),
-                'max_bid': Money(self.treatment.max_allowable_bid)}
+                'min_bid': Money(Constants.min_allowable_bid),
+                'max_bid': Money(Constants.max_allowable_bid)}
 
 
 class ResultsWaitPage(WaitPage):
 
-    group = models.Match
+    scope = models.Group
 
     def after_all_players_arrive(self):
-        self.match.set_winner()
+        self.group.set_winner()
 
 
 class Results(Page):
@@ -44,7 +45,7 @@ class Results(Page):
         return {'is_winner': self.player.is_winner,
                 'is_greedy': self.player.private_value - self.player.bid_amount < 0,
                 'bid_amount': self.player.bid_amount,
-                'winning_bid': self.match.highest_bid(),
+                'winning_bid': self.group.highest_bid(),
                 'private_value': self.player.private_value,
                 'payoff': self.player.payoff}
 

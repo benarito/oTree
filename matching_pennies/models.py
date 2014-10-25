@@ -1,50 +1,44 @@
 # -*- coding: utf-8 -*-
-"""Documentation at https://github.com/oTree-org/otree/wiki"""
+# <standard imports>
+from __future__ import division
 from otree.db import models
 import otree.models
-from otree import forms
+from otree import widgets
+from otree.common import Money, money_range
+import random
+# </standard imports>
+
 
 doc = """
-<p>This is the familiar playground game "Matching Pennies". In this implementation, players are randomly matched in the
-beginning and then continue to play against the same opponent. Their roles alter deterministically.</p>
+<p>This is the familiar playground game "Matching Pennies". In this implementation, players are randomly grouped in the
+beginning and then continue to play against the same opponent for 3 rounds. Their roles alters between rounds.</p>
 <p>The game is preceded by one understanding question (in a real experiment, you would often have more of these).</p>
 <p>Source code <a href="https://github.com/oTree-org/oTree/tree/master/matching_pennies" target="_blank">here</a>.</p>
 """
 
+class Constants:
+    training_1_correct = 'Player 1 gets 100 points, Player 2 gets 0 points'
 
 class Subsession(otree.models.BaseSubsession):
 
     name_in_url = 'matching_pennies'
 
-    def pick_match_groups(self, previous_round_match_groups):
-        match_groups = previous_round_match_groups
-        for group in match_groups:
+    def next_round_groups(self, this_round_groups):
+        groups = this_round_groups
+        for group in groups:
             group.reverse()
-        return match_groups
+        return groups
 
 
-class Treatment(otree.models.BaseTreatment):
+
+
+class Group(otree.models.BaseGroup):
 
     # <built-in>
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    training_1_correct = 'Player 1 gets 100 points, Player 2 gets 0 points'
-
-    point_value = models.MoneyField(
-        default=0.01,
-        doc="""Monetary value of each game point"""
-    )
-
-
-class Match(otree.models.BaseMatch):
-
-    # <built-in>
-    treatment = models.ForeignKey(Treatment)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
-
-    players_per_match = 2
+    players_per_group = 2
 
     def set_points(self):
         p1 = self.get_player_by_role('Player 1')
@@ -61,20 +55,15 @@ class Match(otree.models.BaseMatch):
             p2.is_winner = False
             p1.is_winner = True
 
-    def set_payoffs(self):
-        for player in self.players:
-            player.payoff = sum(p.points_earned for p in player.me_in_previous_rounds() + [player]) * self.treatment.point_value
-
 
 class Player(otree.models.BasePlayer):
 
     # <built-in>
-    match = models.ForeignKey(Match, null=True)
-    treatment = models.ForeignKey(Treatment, null=True)
+    group = models.ForeignKey(Group, null=True)
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    training_question_1 = models.CharField(max_length=100, null=True, verbose_name='', widget=forms.RadioSelect())
+    training_question_1 = models.CharField(max_length=100, null=True, verbose_name='', widget=widgets.RadioSelect())
 
     def training_question_1_choices(self):
         return ['Player 1 gets 0 points, Player 2 gets 0 points',
@@ -83,7 +72,7 @@ class Player(otree.models.BasePlayer):
                 'Player 1 gets 0 points, Player 2 gets 100 points']
 
     def is_training_question_1_correct(self):
-        return self.training_question_1 == self.treatment.training_1_correct
+        return self.training_question_1 == Constants.training_1_correct
 
     points_earned = models.PositiveIntegerField(
         default=0,
@@ -93,7 +82,7 @@ class Player(otree.models.BasePlayer):
     penny_side = models.CharField(
         choices=['Heads', 'Tails'],
         doc="""Heads or tails""",
-        widget=forms.RadioSelect()
+        widget=widgets.RadioSelect()
     )
 
     is_winner = models.NullBooleanField(
@@ -102,15 +91,13 @@ class Player(otree.models.BasePlayer):
 
     def other_player(self):
         """Returns the opponent of the current player"""
-        return self.other_players_in_match()[0]
+        return self.get_others_in_group()[0]
 
     def role(self):
-        if self.index_among_players_in_match == 1:
+        if self.id_in_group == 1:
             return 'Player 1'
-        if self.index_among_players_in_match == 2:
+        if self.id_in_group == 2:
             return 'Player 2'
 
-
-def treatments():
-
-    return [Treatment.create()]
+    def set_payoff(self):
+        self.payoff = 0

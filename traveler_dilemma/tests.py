@@ -1,32 +1,22 @@
-import traveler_dilemma.views as views
-from traveler_dilemma._builtin import Bot
+# -*- coding: utf-8 -*-
+from __future__ import division
+from . import views
+from ._builtin import Bot
 import random
-
-
+from otree.common import Money, money_range
+from .models import Constants
 class PlayerBot(Bot):
 
     def play(self):
 
-        # basic assertions
-        assert (self.treatment.max_amount == 1.00)
-        assert (self.treatment.min_amount == 0.20)
-
         # start game
         self.submit(views.Introduction)
+        self.submit(views.Question1, dict(
+            training_answer_mine=1, training_answer_others=2))
+        self.submit(views.Feedback1)
 
-        # player 1: claim
-        if self.player.index_among_players_in_match == 1:
-            self.play_p1()
+        self.submit(views.Claim, {"claim": random.randrange(Constants.min_amount, Constants.max_amount)})
 
-        # player 2: claim
-        else:
-            self.play_p2()
 
         self.submit(views.Results)
-        print self.player.payoff
-
-    def play_p1(self):
-        self.submit(views.Claim, {"claim": random.choice(self.match.claim_choices())})
-
-    def play_p2(self):
-        self.submit(views.Claim, {"claim": random.choice(self.match.claim_choices())})
+        self.submit(views.Question2, dict(feedback=3))

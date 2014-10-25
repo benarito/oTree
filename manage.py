@@ -1,10 +1,20 @@
 #!/usr/bin/env python
-import os, sys
-import django.conf
-import _otree_experiments.settings
+"""
+Simple wrapper around ./otree
 
-if __name__ == "__main__":
-    if not django.conf.settings.configured:
-        django.conf.settings.configure(**_otree_experiments.settings.settings)
-    from django.core.management import execute_from_command_line
-    execute_from_command_line(sys.argv)
+This file exists to provide tools with a file called manage.py since services
+like heroku expect the existence of such. As enduser you can and should always
+use the ./otree script.
+"""
+
+import os
+import sys
+import subprocess
+
+
+if __name__ == '__main__':
+    base_path = os.path.dirname(os.path.abspath(__file__))
+    otree_script = os.path.join(base_path, 'otree')
+
+    return_code = subprocess.call([otree_script] + sys.argv[1:])
+    sys.exit(return_code)

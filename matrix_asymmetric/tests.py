@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-import matrix_asymmetric.views as views
-from matrix_asymmetric._builtin import Bot
+from __future__ import division
+from . import views
+from ._builtin import Bot
 import random
-
+from otree.common import Money, money_range
+from .models import Constants
 
 class PlayerBot(Bot):
 

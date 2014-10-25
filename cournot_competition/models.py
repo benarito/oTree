@@ -1,15 +1,26 @@
 # -*- coding: utf-8 -*-
-"""Documentation at https://github.com/oTree-org/otree/wiki"""
-
+# <standard imports>
+from __future__ import division
 from otree.db import models
 import otree.models
-
+from otree import widgets
+from otree.common import Money, money_range
+import random
+# </standard imports>
 
 doc = """
-Each player represents a firm. The players have to decide simultaneously how many units to manufacture. All firms manufacture the same kind of product.
-The unit price will depend on the total number of units produced, which will determine the profits for each player.
-Source code <a href="https://github.com/oTree-org/oTree/tree/master/cournot_competition" target="_blank">here</a>.
+<p>In Cournot competition, firms simultaneously decide the units of products to manufacture.
+The unit selling price depends on the total units produced. In this implementation, there are 2 firms competing for 1 period.</p>
+<p>Source code <a href="https://github.com/oTree-org/oTree/tree/master/cournot_competition" target="_blank">here</a>.</p>
 """
+
+class Constants:
+    training_1_correct = 300
+    players_per_group = 2
+
+    # Total production capacity of all players
+    total_capacity = 60
+    max_units_per_player = int(total_capacity / players_per_group)
 
 
 class Subsession(otree.models.BaseSubsession):
@@ -17,63 +28,43 @@ class Subsession(otree.models.BaseSubsession):
     name_in_url = 'cournot_competition'
 
 
-class Treatment(otree.models.BaseTreatment):
+class Group(otree.models.BaseGroup):
 
     # <built-in>
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    total_capacity = models.PositiveIntegerField(
-        default=60,
-        doc="""Total production capacity of all players"""
-    )
+    players_per_group = Constants.players_per_group
 
-    currency_per_point = models.MoneyField(
-        default=0.01,
-        doc="""Currency units for a single point"""
-    )
-
-    def max_units_per_player(self):
-        return self.total_capacity / Match.players_per_match
-
-
-class Match(otree.models.BaseMatch):
-
-    # <built-in>
-    treatment = models.ForeignKey(Treatment)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
-
-    price_in_points = models.PositiveIntegerField(
-        default=None,
+    price = models.PositiveIntegerField(
         doc="""Unit price: P = T - \sum U_i, where T is total capacity and U_i is the number of units produced by player i"""
     )
 
     total_units = models.PositiveIntegerField(
-        default=None,
         doc="""Total units produced by all players"""
     )
 
-    players_per_match = 3
-
-    def set_payoffs(self):
-        self.total_units = sum([p.units for p in self.players])
-        self.price_in_points = self.treatment.total_capacity - self.total_units
-        for p in self.players:
-            p.payoff_in_points = self.price_in_points * p.units
-            p.payoff = p.payoff_in_points * self.treatment.currency_per_point
+    def set_points(self):
+        self.total_units = sum([p.units for p in self.get_players()])
+        self.price = Constants.total_capacity - self.total_units
+        for p in self.get_players():
+            p.points_earned = self.price * p.units
 
 
 class Player(otree.models.BasePlayer):
 
     # <built-in>
-    match = models.ForeignKey(Match, null=True)
-    treatment = models.ForeignKey(Treatment, null=True)
+    group = models.ForeignKey(Group, null=True)
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    payoff_in_points = models.PositiveIntegerField(
-        default=None,
+    training_question_1 = models.PositiveIntegerField(null=True, verbose_name='')
+
+    def is_training_question_1_correct(self):
+        return self.training_question_1 == Constants.training_1_correct
+
+    points_earned = models.PositiveIntegerField(
+        doc="""."""
     )
 
     units = models.PositiveIntegerField(
@@ -82,9 +73,12 @@ class Player(otree.models.BasePlayer):
     )
 
     def units_error_message(self, value):
-        if not 0 <= value <= self.treatment.max_units_per_player():
-            return "The value must be a whole number between {} and {}, inclusive.".format(0, self.treatment.max_units_per_player())
+        if not 0 <= value <= Constants.max_units_per_player:
+            return "The value must be a whole number between {} and {}, inclusive.".format(0, Constants.max_units_per_player)
 
-def treatments():
+    def other_player(self):
+        return self.get_others_in_group()[0]
 
-    return [Treatment.create()]
+    def set_payoff(self):
+        self.payoff = 0
+

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-import matrix_asymmetric.models as models
-from matrix_asymmetric._builtin import Page, WaitPage
-
+from __future__ import division
+from . import models
+from ._builtin import Page, WaitPage
+from otree.common import Money, money_range
+from .models import Constants
 
 class Decision(Page):
 
@@ -11,23 +13,23 @@ class Decision(Page):
     form_fields = ['decision']
 
     def variables_for_template(self):
-        return {'player_id': self.player.index_among_players_in_match,
-                'rowAcolumnA_row': self.treatment.rowAcolumnA_row,
-                'rowAcolumnA_column': self.treatment.rowAcolumnA_column,
-                'rowAcolumnB_row': self.treatment.rowAcolumnB_row,
-                'rowAcolumnB_column': self.treatment.rowAcolumnB_column,
-                'rowBcolumnA_row': self.treatment.rowBcolumnA_row,
-                'rowBcolumnA_column': self.treatment.rowBcolumnA_column,
-                'rowBcolumnB_row': self.treatment.rowBcolumnB_row,
-                'rowBcolumnB_column': self.treatment.rowBcolumnB_column}
+        return {'player_id': self.player.id_in_group,
+                'rowAcolumnA_row': Constants.rowAcolumnA_row,
+                'rowAcolumnA_column': Constants.rowAcolumnA_column,
+                'rowAcolumnB_row': Constants.rowAcolumnB_row,
+                'rowAcolumnB_column': Constants.rowAcolumnB_column,
+                'rowBcolumnA_row': Constants.rowBcolumnA_row,
+                'rowBcolumnA_column': Constants.rowBcolumnA_column,
+                'rowBcolumnB_row': Constants.rowBcolumnB_row,
+                'rowBcolumnB_column': Constants.rowBcolumnB_column}
 
 
 class ResultsWaitPage(WaitPage):
 
-    group = models.Match
+    scope = models.Group
 
     def after_all_players_arrive(self):
-        self.match.set_payoffs()
+        self.group.set_payoffs()
 
 
 class Results(Page):

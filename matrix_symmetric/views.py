@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
-import matrix_symmetric.models as models
-from matrix_symmetric._builtin import Page, WaitPage
-
+from __future__ import division
+from . import models
+from ._builtin import Page, WaitPage
+from otree.common import Money, money_range
+from .models import Constants
 
 class Decision(Page):
 
@@ -11,18 +13,18 @@ class Decision(Page):
     form_fields = ['decision']
 
     def variables_for_template(self):
-        return {'self_A_other_A': self.treatment.self_A_other_A,
-                'self_A_other_B': self.treatment.self_A_other_B,
-                'self_B_other_A': self.treatment.self_B_other_A,
-                'self_B_other_B': self.treatment.self_B_other_B}
+        return {'self_A_other_A': Constants.self_A_other_A,
+                'self_A_other_B': Constants.self_A_other_B,
+                'self_B_other_A': Constants.self_B_other_A,
+                'self_B_other_B': Constants.self_B_other_B}
 
 
 class ResultsWaitPage(WaitPage):
 
-    group = models.Match
+    scope = models.Group
 
     def after_all_players_arrive(self):
-        for p in self.match.players:
+        for p in self.group.get_players():
             p.set_payoff()
 
     def body_text(self):

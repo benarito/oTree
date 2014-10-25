@@ -1,5 +1,5 @@
 # Don't change anything in this file.
-import dictator.models as models
+from .. import models
 import otree.views
 import otree.forms
 import otree.test
@@ -10,8 +10,7 @@ class Page(otree.views.Page):
 
     def z_autocomplete(self):
         self.subsession = models.Subsession()
-        self.treatment = models.Treatment()
-        self.match = models.Match()
+        self.group = models.Group()
         self.player = models.Player()
 
 
@@ -22,23 +21,20 @@ class WaitPage(otree.views.WaitPage):
 
     def z_autocomplete(self):
         self.subsession = models.Subsession()
-        self.treatment = models.Treatment()
-        self.match = models.Match()
+        self.group = models.Group()
 
 class Form(otree.forms.Form):
 
     def z_autocomplete(self):
         self.subsession = models.Subsession()
-        self.treatment = models.Treatment()
-        self.match = models.Match()
+        self.group = models.Group()
         self.player = models.Player()
 
 class Bot(otree.test.Bot):
 
     def z_autocomplete(self):
         self.subsession = models.Subsession()
-        self.treatment = models.Treatment()
-        self.match = models.Match()
+        self.group = models.Group()
         self.player = models.Player()
 
 

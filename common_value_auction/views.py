@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-import common_value_auction.models as models
-from common_value_auction._builtin import Page, WaitPage
-from otree.common import Money
-
+from __future__ import division
+from . import models
+from ._builtin import Page, WaitPage
+from otree.common import Money, money_range
+from .models import Constants
 
 class Introduction(Page):
 
     template_name = 'common_value_auction/Introduction.html'
 
     def variables_for_template(self):
-        return {'other_players_count': len(self.subsession.players)-1}
+        return {'other_players_count': len(self.subsession.get_players())-1}
 
 
 class Bid(Page):
@@ -21,17 +22,17 @@ class Bid(Page):
 
     def variables_for_template(self):
         if self.player.item_value_estimate is None:
-            self.player.item_value_estimate = self.treatment.generate_value_estimate()
+            self.player.item_value_estimate = self.subsession.generate_value_estimate()
 
         return {'item_value_estimate': self.player.item_value_estimate,
-                'error_margin': self.treatment.estimate_error_margin,
-                'min_bid': Money(self.treatment.min_allowable_bid),
-                'max_bid': Money(self.treatment.max_allowable_bid)}
+                'error_margin': Constants.estimate_error_margin,
+                'min_bid': Constants.min_allowable_bid,
+                'max_bid': Constants.max_allowable_bid}
 
 
 class ResultsWaitPage(WaitPage):
 
-    group = models.Subsession
+    scope = models.Subsession
 
     def after_all_players_arrive(self):
         self.subsession.set_winner()
@@ -46,10 +47,10 @@ class Results(Page):
             self.player.set_payoff()
 
         return {'is_winner': self.player.is_winner,
-                'is_greedy': self.treatment.item_value - self.player.bid_amount < 0,
+                'is_greedy': self.subsession.item_value - self.player.bid_amount < 0,
                 'bid_amount': self.player.bid_amount,
                 'winning_bid': self.subsession.highest_bid(),
-                'item_value': self.treatment.item_value,
+                'item_value': self.subsession.item_value,
                 'payoff': self.player.payoff}
 
 

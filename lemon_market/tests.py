@@ -1,18 +1,25 @@
-import otree.test
-import lemon_market.views as views
-from lemon_market._builtin import Bot
+# -*- coding: utf-8 -*-
+from __future__ import division
+from . import views
+from ._builtin import Bot
 import random
-from otree.common import money_range
+from otree.common import Money, money_range
+
 
 class PlayerBot(Bot):
 
     def play(self):
-
-        # start
-        self.submit(views.Introduction)
-
-        # bid
-        self.submit(views.Bid, {'bid_amount': random.choice(money_range(0, self.treatment.max_bid_amount))})
-
-        # results
+        if self.subsession.round_number == 1:
+            self.submit(views.Introduction)
+            self.submit(views.Question1, dict(
+                training_buyer_earnings=1, training_seller1_earnings=2,
+                training_seller2_earnings=3))
+            self.submit(views.Feedback1)
+        if self.player.role() == 'buyer':
+            self.submit(views.Purchase)
+        else:
+            self.submit(views.Production, dict(price=23, quality=20))
         self.submit(views.Results)
+        if self.subsession.round_number == self.subsession.number_of_rounds:
+            self.submit(views.FinalResults)
+            self.submit(views.FeedbackQ, dict(feedback=5))
