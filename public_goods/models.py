@@ -4,32 +4,49 @@ from __future__ import division
 from otree.db import models
 import otree.models
 from otree import widgets
-from otree.common import Money, money_range
+from otree.common import Currency as c, currency_range
 import random
 # </standard imports>
 
 doc = """
-This is a one-period public goods game with 3 players. Assignment to groups is random.
-<br />
-Source code <a href="https://github.com/oTree-org/oTree/tree/master/public_goods" target="_blank">here</a>
+This is a one-period public goods game with 3 players. Assignment to groups is
+random.
 
 """
 
-class Constants:
-    #"""Amount allocated to each player"""
-    endowment = 100
-    efficiency_factor = 1.8
-    base_points = 10
 
-    question_correct = 92
+source_code = "https://github.com/oTree-org/oTree/tree/master/public_goods"
+
+
+bibliography = ()
+
+
+links = {
+    "Wikipedia": {
+        "Public Goods Game": "https://en.wikipedia.org/wiki/Public_goods_game"
+    }
+}
+
+
+keywords = ("Public Goods",)
+
+
+class Constants:
+    name_in_url = 'public_goods'
+    players_per_group = 3
+    num_rounds = 1
+
+    #"""Amount allocated to each player"""
+    endowment = c(100)
+    efficiency_factor = 1.8
+    base_points = c(10)
+
+    question_correct = c(92)
 
 
 class Subsession(otree.models.BaseSubsession):
 
-    name_in_url = 'public_goods'
-
-
-
+    pass
 
 
 class Group(otree.models.BaseGroup):
@@ -38,14 +55,15 @@ class Group(otree.models.BaseGroup):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    players_per_group = 3
+    total_contribution = models.CurrencyField()
+
+    individual_share = models.CurrencyField()
 
     def set_payoffs(self):
-        contributions = sum([p.contribution for p in self.get_players()])
-        individual_share = contributions * Constants.efficiency_factor / self.players_per_group
+        self.total_contribution = sum([p.contribution for p in self.get_players()])
+        self.individual_share = self.total_contribution * Constants.efficiency_factor / Constants.players_per_group
         for p in self.get_players():
-            p.points = (Constants.endowment - p.contribution) + individual_share
-            p.payoff = p.points / Constants.endowment
+            p.payoff = (Constants.endowment - p.contribution) + self.individual_share + Constants.base_points
 
 
 class Player(otree.models.BasePlayer):
@@ -55,22 +73,12 @@ class Player(otree.models.BasePlayer):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    contribution = models.PositiveIntegerField(
+    contribution = models.CurrencyField(
+        min=0, max=Constants.endowment,
         doc="""The amount contributed by the player""",
-        widget=widgets.TextInput()
     )
 
-    def contribution_error_message(self, value):
-        if not 0 <= value <= Constants.endowment:
-            return 'Your entry is invalid.'
-
-    points = models.PositiveIntegerField()
-
-    question = models.PositiveIntegerField(widget=widgets.TextInput())
-    feedbackq = models.CharField(widget=widgets.RadioSelectHorizontal())
-
-    def feedbackq_choices(self):
-        return ['Very well', 'Well', 'OK', 'Badly', 'Very badly']
+    question = models.CurrencyField()
 
     def question_correct(self):
         return self.question == Constants.question_correct

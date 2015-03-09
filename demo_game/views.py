@@ -2,41 +2,38 @@
 from __future__ import division
 from . import models
 from ._builtin import Page, WaitPage
-from otree.common import Money, money_range
+from otree.common import Currency as c, currency_range
 from .models import Constants
 
 
-def variables_for_all_templates(self):
+def vars_for_all_templates(self):
     return {
         'total_q': 5,  # total number of questions to help participants understand study
     }
 
 
 class Introduction(Page):
+    pass
 
-    template_name = 'demo_game/Introduction.html'
-
-
-class QuestionOne(Page):
+class Question1(Page):
     template_name = 'demo_game/Question.html'
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
     form_model = models.Player
     form_fields = ['training_question_1']
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {'num_q': 1}
 
-
-class FeedbackOne(Page):
+class Feedback1(Page):
     template_name = 'demo_game/Feedback.html'
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {'num_q': 1,
                 'question': "How many understanding questions are there? Please enter an odd negative integer, or a non-negative integer.",
                 'answer': self.player.training_question_1,
@@ -46,26 +43,26 @@ class FeedbackOne(Page):
                 }
 
 
-class QuestionTwo(Page):
+class Question2(Page):
     template_name = 'demo_game/Question.html'
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
     form_model = models.Player
     form_fields = ['training_question_2']
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {'num_q': 2}
 
 
-class FeedbackTwo(Page):
+class Feedback2(Page):
     template_name = 'demo_game/Feedback.html'
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {'num_q': 2,
                 'question': "All the following are possible in oTree except one?",
                 'answer': self.player.training_question_2,
@@ -75,26 +72,26 @@ class FeedbackTwo(Page):
                 }
 
 
-class QuestionThree(Page):
+class Question3(Page):
     template_name = 'demo_game/Question.html'
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
     form_model = models.Player
     form_fields = ['training_question_3']
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {'num_q': 3}
 
 
-class FeedbackThree(Page):
+class Feedback3(Page):
     template_name = 'demo_game/Feedback.html'
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {'num_q': 3,
                 'question': "What operating system is required to use oTree?",
                 'answer': self.player.training_question_3,
@@ -104,67 +101,68 @@ class FeedbackThree(Page):
                 }
 
 
-class QuestionFour(Page):
+class Question4(Page):
     template_name = 'demo_game/Question.html'
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
     form_model = models.Player
     form_fields = ['training_question_4']
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {'num_q': 4}
 
 
-class FeedbackFour(Page):
+class Feedback4(Page):
     template_name = 'demo_game/Feedback.html'
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {'num_q': 4,
-                'question': "What can be monitored during the experiment via the admin console?",
+       'question': "What can be monitored during the experiment via the admin console?",
                 'answer': self.player.training_question_4,
                 'correct': Constants.training_4_correct,
                 'explanation': "All of the above.",
                 'is_correct': self.player.is_training_question_4_correct(),
+
                 }
 
 
-class QuestionFive(Page):
+class Question5(Page):
     template_name = 'demo_game/Question.html'
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
     form_model = models.Player
     form_fields = ['training_question_5']
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {'num_q': 5}
 
 
-class FeedbackFive(Page):
+class Feedback5(Page):
     template_name = 'demo_game/Feedback.html'
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
-    def variables_for_template(self):
+
+    def vars_for_template(self):
         return {'num_q': 5,
                 'question': "What kind of data is included when you export a CSV from oTree?",
                 'answer': self.player.training_question_5,
                 'correct': Constants.training_5_correct,
                 'explanation': "Any participants’ input/choice.",
                 'is_correct': self.player.is_training_question_5_correct(),
+
                 }
 
 
 class FormsDemo(Page):
-
-    template_name = 'demo_game/FormsDemo.html'
 
     form_model = models.Player
     form_fields = ['demo_field1', 'demo_field2']
@@ -172,34 +170,31 @@ class FormsDemo(Page):
 
 class Results(Page):
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         if self.player.payoff is None:
             self.player.set_payoff()
-        return {
-            'payoff': self.player.payoff
-        }
 
-    template_name = 'demo_game/Results.html'
+        # return {
+        #     'payoff': self.player.payoff
+        # }
 
 
 class Finish(Page):
+    pass
 
-    template_name = 'demo_game/Finish.html'
 
-
-def pages():
-    return [
+page_sequence=[
         Introduction,
-        QuestionOne,
-        FeedbackOne,
-        QuestionTwo,
-        FeedbackTwo,
-        QuestionThree,
-        FeedbackThree,
-        QuestionFour,
-        FeedbackFour,
-        QuestionFive,
-        FeedbackFive,
+        Question1,
+        Feedback1,
+        Question2,
+        Feedback2,
+        Question3,
+        Feedback3,
+        Question4,
+        Feedback4,
+        Question5,
+        Feedback5,
         FormsDemo,
         Results,
         Finish,

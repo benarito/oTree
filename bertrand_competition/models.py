@@ -4,35 +4,51 @@ from __future__ import division
 from otree.db import models
 import otree.models
 from otree import widgets
-from otree.common import Money, money_range
+from otree.common import Currency as c, currency_range
 import random
-from utils import FEEDBACK_CHOICES
 # </standard imports>
 
 
 doc = """
 2 firms complete in a market by setting prices for homogenous goods.
-Source code <a
-href="https://github.com/oTree-org/oTree/tree/master/bertrand_competition"
-target="_blank">here</a>.
 """
-# Recommended Literature
-# Kruse, Jamie Brown, et al. "Bertrand-Edgeworth competition in experimental
-# markets." Econometrica: Journal of the Econometric Society (1994):
-# Dufwenberg, Martin, and Uri Gneezy. "Price competition and market
-# concentration: an experimental study." International Journal of Industrial
-# Organization 18.1
-# http://en.wikipedia.org/wiki/Bertrand_competition
+
+source_code = "https://github.com/oTree-org/oTree/tree/master/bertrand_competition"
+
+bibliography = (
+    (
+        'Kruse, J. B., Rassenti, S., Reynolds, S. S., & Smith, V. L. (1994). '
+        'Bertrand-Edgeworth competition in experimental markets. '
+        'Econometrica: Journal of the Econometric Society, 343-371.'
+    ),
+    (
+        'Dufwenberg, M., & Gneezy, U. (2000). Price competition and market '
+        'concentration: an experimental study. International Journal of '
+        'Industrial Organization, 18(1), 7-22.'
+    )
+)
+
+links = {
+    "Wikipedia": {
+        "Bertrand Competition":
+            "http://en.wikipedia.org/wiki/Bertrand_competition"
+    }
+}
+
+keywords = ("Bertrand Competition",)
 
 
 class Constants:
-    bonus = 10
-    maximum_price = 100
+    players_per_group = 2
+    name_in_url = 'bertrand_competition'
+    num_rounds = 1
+    bonus = c(10)
+    maximum_price = c(100)
 
 
 class Subsession(otree.models.BaseSubsession):
 
-    name_in_url = 'bertrand_competition'
+    pass
 
 
 class Group(otree.models.BaseGroup):
@@ -41,7 +57,6 @@ class Group(otree.models.BaseGroup):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    players_per_group = 2
 
     def set_payoffs(self):
         players = self.get_players()
@@ -61,25 +76,18 @@ class Player(otree.models.BasePlayer):
     group = models.ForeignKey(Group, null=True)
     subsession = models.ForeignKey(Subsession)
     # </built-in>
-    training_my_profit = models.PositiveIntegerField(
+    training_my_profit = models.CurrencyField(
         verbose_name='My profit would be')
 
-    price = models.PositiveIntegerField(
+    price = models.CurrencyField(
+        min=0, max=Constants.maximum_price,
         doc="""Price player chooses to sell product for"""
     )
 
     is_a_winner = models.BooleanField(
-        default=False,
+        initial=False,
         doc="""Whether this player offered lowest price"""
     )
-
-    feedback = models.PositiveIntegerField(
-        choices=FEEDBACK_CHOICES, widget=widgets.RadioSelectHorizontal(),
-        verbose_name='')
-
-    def price_error_message(self, value):
-        if not 0 <= value <= Constants.maximum_price:
-            return 'Your entry is invalid.'
 
     def is_sole_winner(self):
         return self.is_a_winner and self.group.num_winners == 1

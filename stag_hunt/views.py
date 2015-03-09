@@ -2,20 +2,56 @@
 from __future__ import division
 from . import models
 from ._builtin import Page, WaitPage
-from otree.common import Money, money_range
+from otree.common import Currency as c, currency_range
 from .models import Constants
+
+
+def vars_for_all_templates(self):
+
+    return {'total_q': 1,
+            'total_rounds': Constants.num_rounds,
+            'round_number': self.subsession.round_number}
+
+
+class Introduction(Page):
+
+    def is_displayed(self):
+        return self.subsession.round_number == 1
+
+
+class Question(Page):
+
+    template_name = 'stag_hunt/Question.html'
+
+    def is_displayed(self):
+        return self.subsession.round_number == 1
+
+    form_model = models.Player
+    form_fields = [
+        'training_question_1_my_payoff','training_question_1_other_payoff'
+    ]
+
+    def vars_for_template(self):
+        return {'num_q': 1}
+
+
+class Feedback(Page):
+
+    def vars_for_template(self):
+        return {
+            'num_q': 1,
+        }
+
 
 class Decide(Page):
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
-
-    template_name = 'stag_hunt/Decide.html'
 
     form_model = models.Player
     form_fields = ['decision']
 
-    def variables_for_template(self):
+    def vars_for_template(self):
         return {'player_index': self.player.id_in_group,
                 'stag_stag': Constants.stag_stag_amount,
                 'stag_hare': Constants.stag_hare_amount,
@@ -25,33 +61,28 @@ class Decide(Page):
 
 class ResultsWaitPage(WaitPage):
 
-    scope = models.Group
-
     def after_all_players_arrive(self):
         for p in self.group.get_players():
             p.set_payoff()
 
     def body_text(self):
-        return "Waiting for the other player."
+        return "Waiting for the other participant."
 
 
 class Results(Page):
 
-    def participate_condition(self):
+    def is_displayed(self):
         return True
 
-    template_name = 'stag_hunt/Results.html'
+    def vars_for_template(self):
 
-    def variables_for_template(self):
-
-        return {'payoff': self.player.payoff,
-                'decision': self.player.decision,
-                'other_decision': self.player.other_player().decision,
-                'decision_is_same': self.player.decision == self.player.other_player().decision}
+        return {
+             'total_payoff': self.player.payoff + Constants.fixed_pay}
 
 
-def pages():
-
-    return [Decide,
+page_sequence = [Introduction,
+            Question,
+            Feedback,
+            Decide,
             ResultsWaitPage,
             Results]

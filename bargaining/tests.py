@@ -1,24 +1,33 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
+
+import random
+
+from otree.common import Currency as c, currency_range
+
 from . import views
 from ._builtin import Bot
-import random
-from otree.common import Money, money_range
 from .models import Constants
+
 
 class PlayerBot(Bot):
 
-    def play(self):
+    def play_round(self):
 
         # start
         self.submit(views.Introduction)
-        self.submit(views.Question1, dict(
-            training_amount_mine=1, training_amount_other=2))
-        self.submit(views.Feedback1)
+        self.submit(
+            views.Question1,
+            {"training_amount_mine": 1, "training_amount_other": 2}
+        )
+        self.submit(views.Feedback)
 
         # request
-        self.submit(views.Request, {"request_amount": random.randrange(
-            Constants.amount_shared)})
+        amount = random.randrange(Constants.amount_shared)
+        self.submit(views.Request, {"request_amount": amount})
 
         # results
         self.submit(views.Results)
+
+    def validate_play(self):
+        pass

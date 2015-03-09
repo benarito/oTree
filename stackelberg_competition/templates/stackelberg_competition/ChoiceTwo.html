@@ -1,5 +1,5 @@
 {% extends "global/Base.html" %}
-{% load staticfiles floppyforms otree_tags %}
+{% load staticfiles otree_tags %}
 {% load i18n %}
 
 {% block title %}
@@ -9,10 +9,10 @@
 {% block content %}
 
     <p>
-        The other firm produced {{ other_quantity }} units. How many units will you produce?
+        The other firm produced {{  player.other_player.quantity }} units. How many units will you produce?
     </p>
 
-    {% formrow form.quantity with label='Number of units:' %}
+    {% formfield player.quantity with label='Number of units:' %}
 
     {% next_button %}
 

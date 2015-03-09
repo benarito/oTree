@@ -4,24 +4,46 @@ from __future__ import division
 from otree.db import models
 import otree.models
 from otree import widgets
-from otree.common import Money, money_range
+from otree.common import Currency as c, currency_range
 import random
 # </standard imports>
 
 doc = """
-<p>In Cournot competition, firms simultaneously decide the units of products to manufacture.
-The unit selling price depends on the total units produced. In this implementation, there are 2 firms competing for 1 period.</p>
-<p>Source code <a href="https://github.com/oTree-org/oTree/tree/master/cournot_competition" target="_blank">here</a>.</p>
+In Cournot competition, firms simultaneously decide the units of products to
+manufacture. The unit selling price depends on the total units produced. In
+this implementation, there are 2 firms competing for 1 period.
 """
 
-class Constants:
-    training_1_correct = 300
-    players_per_group = 2
+source_code = "https://github.com/oTree-org/oTree/tree/master/cournot_competition"
 
+
+bibliography = ()
+
+
+links = {
+    "Wikipedia": {
+        "Cournot Competition":
+            "https://en.wikipedia.org/wiki/Cournot_competition"
+        }
+}
+
+
+keywords = ("Cournot Competition",)
+
+
+class Constants:
+    name_in_url = 'cournot_competition'
+    players_per_group = 2
+    num_rounds = 1
+
+    training_1_correct = 300
+
+    base_points = 50
     # Total production capacity of all players
     total_capacity = 60
     max_units_per_player = int(total_capacity / players_per_group)
-
+    feedback1_question = """Suppose firm Q produced 20 units and firm P produced 30 units. What would be the profit for firm P?"""
+    feedback1_explanation=  """Total units produced were 20 + 30 = 50. The unit selling price was 60 – 50 = 10. The profit for firm P would be the product of the unit selling price and the unit produced by firm P, that is 10 × 30 = 300"""
 
 class Subsession(otree.models.BaseSubsession):
 
@@ -34,9 +56,7 @@ class Group(otree.models.BaseGroup):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    players_per_group = Constants.players_per_group
-
-    price = models.PositiveIntegerField(
+    price = models.CurrencyField(
         doc="""Unit price: P = T - \sum U_i, where T is total capacity and U_i is the number of units produced by player i"""
     )
 
@@ -44,11 +64,11 @@ class Group(otree.models.BaseGroup):
         doc="""Total units produced by all players"""
     )
 
-    def set_points(self):
+    def set_payoffs(self):
         self.total_units = sum([p.units for p in self.get_players()])
         self.price = Constants.total_capacity - self.total_units
         for p in self.get_players():
-            p.points_earned = self.price * p.units
+            p.payoff = self.price * p.units
 
 
 class Player(otree.models.BasePlayer):
@@ -58,27 +78,18 @@ class Player(otree.models.BasePlayer):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    training_question_1 = models.PositiveIntegerField(null=True, verbose_name='')
+    training_question_1 = models.CurrencyField()
 
     def is_training_question_1_correct(self):
         return self.training_question_1 == Constants.training_1_correct
 
-    points_earned = models.PositiveIntegerField(
-        doc="""."""
-    )
-
     units = models.PositiveIntegerField(
-        default=None,
+        initial=None,
+        min=0, max=Constants.max_units_per_player,
         doc="""Quantity of units to produce"""
     )
-
-    def units_error_message(self, value):
-        if not 0 <= value <= Constants.max_units_per_player:
-            return "The value must be a whole number between {} and {}, inclusive.".format(0, Constants.max_units_per_player)
 
     def other_player(self):
         return self.get_others_in_group()[0]
 
-    def set_payoff(self):
-        self.payoff = 0
 

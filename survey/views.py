@@ -2,7 +2,7 @@
 from __future__ import division
 from . import models
 from ._builtin import Page, WaitPage
-from otree.common import Money, money_range
+from otree.common import Currency as c, currency_range
 from .models import Constants
 
 class Demographics(Page):
@@ -30,15 +30,11 @@ class CognitiveReflectionTest(Page):
 
 class End(Page):
 
-    template_name = 'survey/End.html'
-
-    def variables_for_template(self):
+    def vars_for_template(self):
         self.player.set_payoff()
         return None
 
 
-def pages():
-
-    return [Demographics,
+page_sequence = [Demographics,
             CognitiveReflectionTest,
             End]

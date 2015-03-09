@@ -4,29 +4,45 @@ from __future__ import division
 from otree.db import models
 import otree.models
 from otree import widgets
-from otree.common import Money, money_range
+from otree.common import Currency as c, currency_range
 import random
 # </standard imports>
 
 
 doc = """
-In the symmetric matrix game, the payoffs for playing a particular strategy depend only on the other strategies employed, not on who is playing them.
-Source code <a href="https://github.com/oTree-org/oTree/tree/master/matrix_symmetric" target="_blank">here</a>.
+In the symmetric matrix game, the payoffs for playing a particular strategy
+depend only on the other strategies employed, not on who is playing them.
 """
 
+source_code = "https://github.com/oTree-org/oTree/tree/master/matrix_symmetric"
+
+
+bibliography = ()
+
+
+links = {}
+
+
+keywords = ()
+
+
 class Constants:
-    self_A_other_A = Money(0.10)
+    name_in_url = 'matrix_symmetric'
+    players_per_group = 2
+    num_rounds = 1
+
+    self_A_other_A = c(10)
 
     # How much I make if I choose A and the other player chooses B
-    self_A_other_B = Money(0.00)
+    self_A_other_B = c(0)
 
-    self_B_other_A = Money(0.30)
-    self_B_other_B = Money(0.40)
+    self_B_other_A = c(30)
+    self_B_other_B = c(40)
 
 
 class Subsession(otree.models.BaseSubsession):
 
-    name_in_url = 'matrix_symmetric'
+    pass
 
 
 
@@ -35,8 +51,6 @@ class Group(otree.models.BaseGroup):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
     # </built-in>
-
-    players_per_group = 2
 
 
 class Player(otree.models.BasePlayer):
@@ -51,12 +65,10 @@ class Player(otree.models.BasePlayer):
         return self.get_others_in_group()[0]
 
     decision = models.CharField(
+        choices=['A', 'B'],
         doc='either A or B',
         widget=widgets.RadioSelect(),
     )
-
-    def decision_choices(self):
-        return ['A', 'B']
 
     def set_payoff(self):
 

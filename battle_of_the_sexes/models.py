@@ -1,39 +1,87 @@
 # -*- coding: utf-8 -*-
 # <standard imports>
 from __future__ import division
-from otree.db import models
-import otree.models
-from otree import widgets
-from otree.common import Money, money_range
+
 import random
+
+import otree.models
+from otree.db import models
+from otree import widgets
+from otree.common import Currency as c, currency_range
 # </standard imports>
 
 
-
 doc = """
-This is a 2-player 2-strategy coordination game. The name and story originated from <a href="http://books.google.ch/books?id=uqDDAgAAQBAJ&lpg=PP1&ots=S-DC4LemnS&lr&pg=PP1#v=onepage&q&f=false" target="_blank">Luce and Raiffa (1957)</a>.
-<br />
-Source code <a href="https://github.com/oTree-org/oTree/tree/master/battle_of_the_sexes" target="_blank">here</a>.
+This is a 2-player 2-strategy coordination game. The name and story originated
+from
+<a href="http://books.google.ch/books?id=uqDDAgAAQBAJ&lpg=PP1&ots=S-DC4LemnS&lr&pg=PP1#v=onepage&q&f=false" target="_blank">
+    Luce and Raiffa (1957)
+</a>.
+
 """
 
+source_code = (
+    "https://github.com/oTree-org/oTree/tree/master/battle_of_the_sexes"
+)
+
+bibliography = (
+    (
+        'Luce, R. Duncan, and Howard Raiffa. Games and decisions: '
+        'Introduction and critical survey. Courier Dover Publications, 2012.'
+    ),
+    (
+        'Rapoport, Anatol. Two-person game theory. Courier Dover '
+        'Publications, 1999.'
+    ),
+    (
+        'Cooper, Russell, et al. "Forward induction in the '
+        'battle-of-the-sexes games."The American Economic Review (1993): '
+        '1303-1316.'
+    ),
+    (
+        'Cooper, Russell, et al. "Communication in the battle of the sexes '
+        'game: some experimental results." The RAND Journal of Economics '
+        '(1989): 568-587.'
+    )
+)
+
+
+links = {
+    "Wikipedia": {
+        "Battle of the Sexes":
+            "https://en.wikipedia.org/wiki/Battle_of_the_sexes_%28game_theory%29",
+        "Coordination Game": "https://en.wikipedia.org/wiki/Coordination_game"
+    }
+}
+
+
+keywords = ("Battle of the Sexes", "Coordination")
+
+
 class Constants:
+    name_in_url = 'battle_of_the_sexes'
+    players_per_group = 2
+    num_rounds = 1
 
     # """Amount rewarded to husband if football is chosen"""
-    football_husband_amount = Money(0.30)
+    football_husband_amount = opera_wife_amount = c(300)
 
     # Amount rewarded to wife if football is chosen
-    football_wife_amount = Money(0.20)
+    football_wife_amount = opera_husband_amount = c(200)
 
     # amount rewarded to either if the choices don't match
-    mismatch_amount = Money(0.00)
+    mismatch_amount = c(0)
 
-    opera_husband_amount = Money(0.20)
-    opera_wife_amount = Money(0.30)
 
+    training_1_husband_correct = c(0)
+    training_1_wife_correct = c(0)
+
+    training_1_maximum_offered_points = c(300)
+    fixed_pay = 10
 
 class Subsession(otree.models.BaseSubsession):
 
-    name_in_url = 'battle_of_the_sexes'
+    pass
 
 
 class Group(otree.models.BaseGroup):
@@ -42,7 +90,7 @@ class Group(otree.models.BaseGroup):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    players_per_group = 2
+
 
     def set_payoffs(self):
         husband = self.get_player_by_role('husband')
@@ -68,13 +116,23 @@ class Player(otree.models.BasePlayer):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
+    training_question_1_husband = models.CurrencyField(min=0, max=Constants.training_1_maximum_offered_points)
+
+    training_question_1_wife = models.CurrencyField(min=0, max=Constants.training_1_maximum_offered_points)
+
     decision = models.CharField(
+        choices=['Football', 'Opera'],
         doc="""Either football or the opera""",
         widget=widgets.RadioSelect()
     )
 
-    def decision_choices(self):
-        return ['Football', 'Opera']
+    def is_training_question_1_husband_correct(self):
+        return (self.training_question_1_husband ==
+                Constants.training_1_husband_correct)
+
+    def is_training_question_1_wife_correct(self):
+        return (self.training_question_1_wife ==
+                Constants.training_1_wife_correct)
 
     def other_player(self):
         """Returns other player in group"""

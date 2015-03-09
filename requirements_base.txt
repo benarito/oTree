@@ -1,10 +1,4 @@
 dj-database-url==0.2.2
-dj-static==0.0.5
-otree-core==0.2.209
-django-vanilla-views==1.0.2
-django-countries==1.5
 gunicorn==18.0
 static==1.0.2
-wsgiref==0.1.2
-six
-raven>=3
+otree-core==0.2.273

@@ -4,36 +4,53 @@ from __future__ import division
 from otree.db import models
 import otree.models
 from otree import widgets
-from utils import FEEDBACK_CHOICES
+from otree.common import Currency as c, currency_range
 # </standard imports>
 
 doc = """
 Each player decides if to free ride or to volunteer from which all will
 benefit.
-
-Source code <a
-href="https://github.com/oTree-org/oTree/tree/master/volunteer_dilemma"
-target="_blank">here</a>.
 """
-# Recommended Literature
-# Diekmann, Andreas.
-# "Volunteer's dilemma." Journal of Conflict Resolution(1985):
-# http://en.wikipedia.org/wiki/Volunteer%27s_dilemma
+
+source_code = "https://github.com/oTree-org/oTree/tree/master/volunteer_dilemma"
+
+
+bibliography = (
+    (
+        "Diekmann, A. (1985). Volunteer's dilemma. Journal of Conflict "
+        "Resolution, 605-610."
+    ),
+)
+
+
+links = {
+    "Wikipedia": {
+        "Volunteer's Dilemma":
+            "http://en.wikipedia.org/wiki/Volunteer%27s_dilemma"
+    }
+}
+
+
+keywords = ("Volunteer's Dilemma",)
 
 
 class Constants:
-    bonus = 10
+    name_in_url = 'volunteer_dilemma'
+    players_per_group = 3
+    num_rounds = 1
+    num_other_players = players_per_group - 1
+    bonus = c(10)
 
     # """Payoff for each player if at least one volunteers"""
-    general_benefit = 100
+    general_benefit = c(100)
 
     # """Cost incurred by volunteering player"""
-    volunteer_cost = 40
+    volunteer_cost = c(40)
 
 
 class Subsession(otree.models.BaseSubsession):
 
-    name_in_url = 'volunteer_dilemma'
+    pass
 
 
 class Group(otree.models.BaseGroup):
@@ -42,7 +59,6 @@ class Group(otree.models.BaseGroup):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    players_per_group = 3
 
     def set_payoffs(self):
         baseline_amount = Constants.bonus
@@ -61,14 +77,10 @@ class Player(otree.models.BasePlayer):
     subsession = models.ForeignKey(Subsession)
     # </built-in>
 
-    training_my_payoff = models.PositiveIntegerField(
+    training_my_payoff = models.CurrencyField(
         verbose_name='My payoff would be')
 
-    volunteer = models.NullBooleanField(
+    volunteer = models.BooleanField(
         doc="""Whether player volunteers""",
         widget=widgets.RadioSelect(),
     )
-
-    feedback = models.PositiveIntegerField(
-        choices=FEEDBACK_CHOICES, widget=widgets.RadioSelectHorizontal(),
-        verbose_name='')

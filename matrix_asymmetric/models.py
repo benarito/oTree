@@ -4,34 +4,50 @@ from __future__ import division
 from otree.db import models
 import otree.models
 from otree import widgets
-from otree.common import Money, money_range
+from otree.common import Currency as c, currency_range
 import random
 # </standard imports>
 
 
 doc = """
-In the asymmetric matrix game, the strategy sets for both players are different.
-Source code <a href="https://github.com/oTree-org/oTree/tree/master/matrix_asymmetric" target="_blank">here</a>.
+In the asymmetric matrix game, the strategy sets for both players are
+different.
 """
 
+source_code = "https://github.com/oTree-org/oTree/tree/master/matrix_asymmetric"
+
+
+bibliography = ()
+
+
+links = {}
+
+
+keywords = ()
+
+
 class Constants:
-    rowAcolumnA_row = Money(0.20)
-    rowAcolumnA_column = Money(0.30)
+    name_in_url = 'matrix_asymmetric'
+    players_per_group = 2
+    num_rounds = 1
+
+    rowAcolumnA_row = c(20)
+    rowAcolumnA_column = c(30)
 
     # Amount row player gets, if row player chooses A and column player chooses B
-    rowAcolumnB_row = Money(0.40)
-    rowAcolumnB_column = Money(0.10)
+    rowAcolumnB_row = c(40)
+    rowAcolumnB_column = c(10)
 
-    rowBcolumnA_row = Money(0.05)
-    rowBcolumnA_column = Money(0.45)
+    rowBcolumnA_row = c(5)
+    rowBcolumnA_column = c(45)
 
-    rowBcolumnB_row = Money(0.15)
-    rowBcolumnB_column = Money(0.25)
+    rowBcolumnB_row = c(15)
+    rowBcolumnB_column = c(25)
 
 
 class Subsession(otree.models.BaseSubsession):
 
-    name_in_url = 'matrix_asymmetric'
+    pass
 
 
 
@@ -40,8 +56,6 @@ class Group(otree.models.BaseGroup):
     # <built-in>
     subsession = models.ForeignKey(Subsession)
     # </built-in>
-
-    players_per_group = 2
 
     def set_payoffs(self):
         row_player = self.get_player_by_role('row')
@@ -85,12 +99,10 @@ class Player(otree.models.BasePlayer):
         return self.get_others_in_group()[0]
 
     decision = models.CharField(
+        choices=['A', 'B'],
         doc='either A or B',
         widget=widgets.RadioSelect()
     )
-
-    def decision_choices(self):
-        return ['A', 'B']
 
     def role(self):
         if self.id_in_group == 1:
