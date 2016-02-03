@@ -2,7 +2,9 @@
 # <standard imports>
 from __future__ import division
 from otree.db import models
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree import widgets
 from otree.common import Currency as c, currency_range
 import random
@@ -38,7 +40,7 @@ links = {
 keywords = ("Bertrand Competition",)
 
 
-class Constants:
+class Constants(BaseConstants):
     players_per_group = 2
     name_in_url = 'bertrand_competition'
     num_rounds = 1
@@ -46,16 +48,12 @@ class Constants:
     maximum_price = c(100)
 
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
 
     pass
 
 
-class Group(otree.models.BaseGroup):
-
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Group(BaseGroup):
 
 
     def set_payoffs(self):
@@ -70,12 +68,8 @@ class Group(otree.models.BaseGroup):
                 p.payoff += p.price
 
 
-class Player(otree.models.BasePlayer):
+class Player(BasePlayer):
 
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
     training_my_profit = models.CurrencyField(
         verbose_name='My profit would be')
 

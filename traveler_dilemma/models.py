@@ -6,7 +6,9 @@ from __future__ import division
 """
 
 from otree.db import models
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree.common import Currency as c, currency_range
 from otree import widgets
 
@@ -36,7 +38,7 @@ links = {
 
 keywords = ("Traveler's Dilemma",)
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'traveler_dilemma'
     players_per_group = 2
     num_rounds = 1
@@ -45,7 +47,7 @@ class Constants:
     reward = c(2)
 
     # Player's deduction for the higher claim
-    penalty = c(2)
+    penalty = reward
 
     # The maximum claim to be requested
     max_amount = c(100)
@@ -57,25 +59,16 @@ class Constants:
 
 
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
 
     pass
 
 
-class Group(otree.models.BaseGroup):
+class Group(BaseGroup):
+    pass
 
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Player(BasePlayer):
 
-
-class Player(otree.models.BasePlayer):
-
-
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
 
     training_answer_mine = models.CurrencyField(verbose_name='My compensation would be')
     training_answer_others = models.CurrencyField(verbose_name="The other traveler's compensation would be")

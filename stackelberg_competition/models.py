@@ -2,7 +2,9 @@
 # <standard imports>
 from __future__ import division
 from otree.db import models
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree import widgets
 from otree.common import Currency as c, currency_range
 import random
@@ -32,7 +34,7 @@ links = {
 keywords = ("Stackelberg Competition",)
 
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'stackelberg_competition'
     players_per_group = 2
     num_rounds = 1
@@ -45,28 +47,21 @@ class Constants:
     fixed_pay = c(50)
     training_1_correct = c(300)
 
-class Subsession(otree.models.BaseSubsession):
+    training_question_1 = "Suppose firm A first decided to produce 20 units. Then firm B would be informed of firm A's production and decided to produce 30 units. What would be the profit for firm B?"
+
+class Subsession(BaseSubsession):
 
     pass
 
 
-class Group(otree.models.BaseGroup):
-
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Group(BaseGroup):
 
     price = models.CurrencyField(
         doc="""Unit price: P = T - Q1 - Q2, where T is total capacity and Q_i are the units produced by the players"""
     )
 
 
-class Player(otree.models.BasePlayer):
-
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Player(BasePlayer):
 
     training_question_1 = models.CurrencyField()
 

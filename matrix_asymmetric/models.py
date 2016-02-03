@@ -2,7 +2,9 @@
 # <standard imports>
 from __future__ import division
 from otree.db import models
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree import widgets
 from otree.common import Currency as c, currency_range
 import random
@@ -26,7 +28,7 @@ links = {}
 keywords = ()
 
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'matrix_asymmetric'
     players_per_group = 2
     num_rounds = 1
@@ -45,17 +47,13 @@ class Constants:
     rowBcolumnB_column = c(25)
 
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
 
     pass
 
 
 
-class Group(otree.models.BaseGroup):
-
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Group(BaseGroup):
 
     def set_payoffs(self):
         row_player = self.get_player_by_role('row')
@@ -87,12 +85,7 @@ class Group(otree.models.BaseGroup):
         column_player.payoff = column_matrix[row_player.decision][column_player.decision]
 
 
-class Player(otree.models.BasePlayer):
-
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Player(BasePlayer):
 
     def other_player(self):
         """Returns other player in group"""

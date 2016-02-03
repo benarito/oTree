@@ -29,8 +29,6 @@ class Feedback(Page):
 
     def vars_for_template(self):
         return {'num_q': 1,
-                'question': """Suppose firm A first decided to produce 20 units. Then firm B would be informed of firm A's production and decided to produce 30 units.
-                               What would be the profit for firm B?""",
               #  'answer': self.player.training_question_1,
                # 'correct': Constants.training_1_correct,
                 'explanation': """Total units produced were 20 + 30 = 50. The unit selling price was 60 – 50 = 10.
@@ -77,8 +75,7 @@ class ResultsWaitPage(WaitPage):
 
 
 
-    def body_text(self):
-        return "Waiting for the other participant to decide."
+    body_text = "Waiting for the other participant to decide."
 
     def after_all_players_arrive(self):
         for p in self.group.get_players():

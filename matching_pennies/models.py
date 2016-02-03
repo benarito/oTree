@@ -2,7 +2,9 @@
 # <standard imports>
 from __future__ import division
 from otree.db import models
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree import widgets
 from otree.common import Currency as c, currency_range
 import random
@@ -34,29 +36,25 @@ links = {
 
 keywords = ("Matching Pennies",)
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'matching_pennies'
     players_per_group = 2
     num_rounds = 3
     base_points = c(50)
     training_1_correct = 'Player 1 gets 100 points, Player 2 gets 0 points'
     feedback1_explanation = 'Player 1 gets 100 points, Player 2 gets 0 points'
-    feedback1_question = 'Suppose Player 1 picked "Heads" and Player 2 guessed "Tails". Which of the following will be the result of that round?',
+    training_question_1 = 'Suppose Player 1 picked "Heads" and Player 2 guessed "Tails". Which of the following will be the result of that round?'
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
 
     def before_session_starts(self):
-        if self.round_number > 1:
+        if self.round_number % 2 == 0:
             for group in self.get_groups():
                 players = group.get_players()
                 players.reverse()
                 group.set_players(players)
 
-class Group(otree.models.BaseGroup):
-
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Group(BaseGroup):
 
 
     def set_payoffs(self):
@@ -75,12 +73,7 @@ class Group(otree.models.BaseGroup):
             p1.is_winner = True
 
 
-class Player(otree.models.BasePlayer):
-
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Player(BasePlayer):
 
     training_question_1 = models.CharField(max_length=100,
                                            choices=['Player 1 gets 0 points, Player 2 gets 0 points',

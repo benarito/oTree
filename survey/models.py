@@ -2,7 +2,9 @@
 # <standard imports>
 from __future__ import division
 from otree.db import models
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree import widgets
 from otree.common import Currency as c, currency_range
 import random
@@ -11,31 +13,21 @@ import random
 from django_countries.fields import CountryField
 
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'survey'
     players_per_group = None
     num_rounds = 1
 
 
-class Subsession(otree.models.BaseSubsession):
-
+class Subsession(BaseSubsession):
     pass
 
 
-
-class Group(otree.models.BaseGroup):
-
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Group(BaseGroup):
+    pass
 
 
-class Player(otree.models.BasePlayer):
-
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Player(BasePlayer):
 
     def set_payoff(self):
         """Calculate payoff, which is zero for the survey"""
@@ -50,7 +42,6 @@ class Player(otree.models.BasePlayer):
                                 verbose_name='What is your gender?',
                                 widget=widgets.RadioSelect())
 
-    crt_bat_float = models.DecimalField(max_digits=6, decimal_places=2)
     crt_bat = models.PositiveIntegerField()
     crt_widget = models.PositiveIntegerField()
     crt_lake = models.PositiveIntegerField()

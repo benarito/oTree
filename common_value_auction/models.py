@@ -2,7 +2,9 @@
 # <standard imports>
 from __future__ import division
 from otree.db import models
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree import widgets
 from otree.common import Currency as c, currency_range
 import random
@@ -31,7 +33,7 @@ links = {
 keywords = ("Common Value Auction",)
 
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'common_value_auction'
     players_per_group = None
     num_rounds = 1
@@ -42,15 +44,11 @@ class Constants:
     # Error margin for the value estimates shown to the players
     estimate_error_margin = 1
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
     pass
 
 
-class Group(otree.models.BaseGroup):
-
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Group(BaseGroup):
 
     def highest_bid(self):
         return max([p.bid_amount for p in self.get_players()])
@@ -83,12 +81,7 @@ class Group(otree.models.BaseGroup):
         return len(self.other_players_count()-1)
 
 
-class Player(otree.models.BasePlayer):
-
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Player(BasePlayer):
 
     item_value_estimate = models.CurrencyField(
         doc="""Estimate of the common value, may be different for each player"""

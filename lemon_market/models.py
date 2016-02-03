@@ -2,7 +2,9 @@
 # <standard imports>
 from __future__ import division
 from otree.db import models
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree import widgets
 from otree.common import Currency as c, currency_range
 # </standard imports>
@@ -39,7 +41,7 @@ keywords = ("Lemon Market",)
 
 
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'lemon_market'
     players_per_group = 3
     num_rounds = 3
@@ -47,16 +49,12 @@ class Constants:
     INITIAL = c(50)
 
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
 
     final = models.BooleanField(initial=False)
 
 
-class Group(otree.models.BaseGroup):
-
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Group(BaseGroup):
 
     buyer_choice = models.PositiveIntegerField()
 
@@ -76,21 +74,16 @@ class Group(otree.models.BaseGroup):
             return self.get_player_by_id(choice + 1)
 
 
-class Player(otree.models.BasePlayer):
-
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Player(BasePlayer):
 
     # training
-    training_buyer_earnings = models.IntegerField(
+    training_buyer_earnings = models.CurrencyField(
         verbose_name="Buyer's period payoff would be")
 
-    training_seller1_earnings = models.IntegerField(
+    training_seller1_earnings = models.CurrencyField(
         verbose_name="Seller 1's period payoff would be")
 
-    training_seller2_earnings = models.IntegerField(
+    training_seller2_earnings = models.CurrencyField(
         verbose_name="Seller 2's period payoff would be")
 
     # seller
@@ -107,7 +100,7 @@ class Player(otree.models.BasePlayer):
         widget=widgets.RadioSelectHorizontal())
 
     # buyer
-    choice = models.PositiveSmallIntegerField(
+    choice = models.PositiveIntegerField(
         choices=[(i, 'Buy from seller %i' % i) for i in
                  range(1, Constants.players_per_group)] + [(0, 'Buy nothing')],
         blank=True,

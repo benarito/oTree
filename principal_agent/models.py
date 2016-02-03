@@ -2,7 +2,9 @@
 # <standard imports>
 from __future__ import division
 from otree.db import models
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree import widgets
 from otree.common import Currency as c, currency_range
 import utils
@@ -52,7 +54,7 @@ keywords = (
 )
 
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'principal_agent'
     players_per_group = 2
     num_rounds = 1
@@ -104,16 +106,12 @@ def return_from_effort(effort):
     return c(Constants.EFFORT_TO_RETURN[effort])
 
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
 
     pass
 
 
-class Group(otree.models.BaseGroup):
-
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Group(BaseGroup):
 
     total_return = models.CurrencyField(
         doc="""Total return from agent's effort = [Return for single unit of
@@ -176,12 +174,8 @@ class Group(otree.models.BaseGroup):
 
 
 
-class Player(otree.models.BasePlayer):
+class Player(BasePlayer):
 
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
     training_my_payoff = models.CurrencyField(
         verbose_name='I would receive')
     training_other_payoff = models.CurrencyField(

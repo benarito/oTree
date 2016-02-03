@@ -4,7 +4,9 @@ from __future__ import division
 
 import random
 
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree.db import models
 from otree import widgets
 from otree.common import Currency as c, currency_range
@@ -58,7 +60,7 @@ links = {
 keywords = ("Battle of the Sexes", "Coordination")
 
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'battle_of_the_sexes'
     players_per_group = 2
     num_rounds = 1
@@ -79,16 +81,12 @@ class Constants:
     training_1_maximum_offered_points = c(300)
     fixed_pay = 10
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
 
     pass
 
 
-class Group(otree.models.BaseGroup):
-
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Group(BaseGroup):
 
 
 
@@ -109,12 +107,7 @@ class Group(otree.models.BaseGroup):
                 wife.payoff = Constants.opera_wife_amount
 
 
-class Player(otree.models.BasePlayer):
-
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Player(BasePlayer):
 
     training_question_1_husband = models.CurrencyField(min=0, max=Constants.training_1_maximum_offered_points)
 

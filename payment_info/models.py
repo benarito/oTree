@@ -2,7 +2,9 @@
 # <standard imports>
 from __future__ import division
 from otree.db import models
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree import widgets
 from otree.common import Currency as c, currency_range
 import random
@@ -27,12 +29,12 @@ links = {}
 keywords = ()
 
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'payment_info'
     players_per_group = None
     num_rounds = 1
 
-class Subsession(otree.models.BaseSubsession):
+class Subsession(BaseSubsession):
 
     def before_session_starts(self):
         for p in self.get_players():
@@ -40,19 +42,10 @@ class Subsession(otree.models.BaseSubsession):
 
 
 
-class Group(otree.models.BaseGroup):
+class Group(BaseGroup):
+    pass
 
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
-
-
-class Player(otree.models.BasePlayer):
-
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
-
+class Player(BasePlayer):
+    pass
 
 

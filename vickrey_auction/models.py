@@ -2,7 +2,9 @@
 # <standard imports>
 from __future__ import division
 from otree.db import models
-import otree.models
+from otree.constants import BaseConstants
+from otree.models import BaseSubsession, BaseGroup, BasePlayer
+
 from otree import widgets
 from otree.common import Currency as c, currency_range
 import random
@@ -43,7 +45,7 @@ keywords = (
 )
 
 
-class Constants:
+class Constants(BaseConstants):
     name_in_url = 'vickrey_auction'
     players_per_group = 3
     num_rounds = 1
@@ -56,14 +58,15 @@ class Constants:
     training_question_1_my_payoff_correct = c(105)
 
 
-class Subsession(otree.models.BaseSubsession):
-    pass
+class Subsession(BaseSubsession):
+    def before_session_starts(self):
+        for p in self.get_players():
+            p.private_value = random.randint(
+            Constants.min_allowable_bid, Constants.max_allowable_bid
+        )
 
-class Group(otree.models.BaseGroup):
 
-    # <built-in>
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Group(BaseGroup):
 
     def highest_bid(self):
         return max([p.bid_amount for p in self.get_players()])
@@ -83,13 +86,18 @@ class Group(otree.models.BaseGroup):
         winner = random.choice(players_with_highest_bid)
         winner.is_winner = True
 
+    def set_payoffs(self):
+        second_highest_bid = self.second_highest_bid()
+        for p in self.get_players():
+            p.payoff = Constants.fixed_payoff
+            if p.is_winner:
+                p.payoff += (
+                    p.private_value - second_highest_bid
+                )
+                if p.payoff < 0:
+                    p.payoff = 0
 
-class Player(otree.models.BasePlayer):
-
-    # <built-in>
-    group = models.ForeignKey(Group, null=True)
-    subsession = models.ForeignKey(Subsession)
-    # </built-in>
+class Player(BasePlayer):
 
     private_value = models.CurrencyField(
         null=True,
@@ -107,22 +115,10 @@ class Player(otree.models.BasePlayer):
         doc="""Indicates whether the player is the winner"""
     )
 
-    training_question_1_my_payoff = models.CurrencyField(min=Constants.min_allowable_bid,max=Constants.max_allowable_bid)
+    training_question_1_my_payoff = models.CurrencyField()
 
     def is_training_question_1_my_payoff_correct(self):
         return (self.training_question_1_my_payoff==
                 Constants.training_question_1_my_payoff_correct)
 
-    def generate_private_value(self):
-        return random.randint(
-            Constants.min_allowable_bid, Constants.max_allowable_bid
-        )
 
-    def set_payoff(self):
-        self.payoff = Constants.fixed_payoff
-        if self.is_winner:
-            self.payoff += (
-                self.private_value - self.group.second_highest_bid()
-            )
-            if self.payoff < 0:
-                self.payoff = 0
